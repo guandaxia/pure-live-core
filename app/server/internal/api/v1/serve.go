@@ -3,16 +3,15 @@ package v1
 import (
 	"context"
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
-	"github.com/iyear/pure-live/app/server/internal/config"
-	"github.com/iyear/pure-live/global"
-	"github.com/iyear/pure-live/pkg/client"
-	"github.com/iyear/pure-live/pkg/conf"
-	"github.com/iyear/pure-live/pkg/ecode"
-	"github.com/iyear/pure-live/pkg/format"
-	"github.com/iyear/pure-live/pkg/util"
-	"github.com/iyear/pure-live/service/svc_live"
+	"github.com/iyear/pure-live-core/app/server/internal/config"
+	"github.com/iyear/pure-live-core/global"
+	"github.com/iyear/pure-live-core/pkg/client"
+	"github.com/iyear/pure-live-core/pkg/conf"
+	"github.com/iyear/pure-live-core/pkg/ecode"
+	"github.com/iyear/pure-live-core/pkg/format"
+	"github.com/iyear/pure-live-core/pkg/util"
+	"github.com/iyear/pure-live-core/service/svc_live"
 	"go.uber.org/zap"
 	"net/http"
 	"time"
@@ -114,7 +113,7 @@ func getUpgradeHeader(id string) http.Header {
 func getUniqueID() string {
 	id := ""
 	for {
-		id = uuid.New().String()
+		id = util.RandLetters(10)
 		if _, ok := global.Hub.Conn.Load(id); !ok {
 			break
 		}

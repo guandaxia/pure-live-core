@@ -4,11 +4,12 @@ import (
 	"encoding/binary"
 	"encoding/json"
 	"github.com/gorilla/websocket"
-	"github.com/iyear/pure-live/model"
+	"github.com/iyear/pure-live-core/model"
 	"strconv"
 )
 
-func (c *base) Host() string {
+func (c *base) Host(room string) string {
+	_ = room
 	return "wss://broadcastlv.chat.bilibili.com/sub"
 }
 func (c *base) Enter(room string) (int, [][]byte, error) {
