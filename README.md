@@ -1,11 +1,14 @@
-![](https://socialify.git.ci/iyear/pure-live-core/image?description=1&font=Raleway&forks=1&issues=1&logo=https://s4.ax1x.com/2021/12/06/orLSGF.png&owner=1&pattern=Circuit%20Board&stargazers=1&theme=Dark)
-
 ## 🎉 简介
 
 ![](https://img.shields.io/github/go-mod/go-version/iyear/pure-live-core?style=flat-square)
 ![](https://img.shields.io/badge/license-GPL-lightgrey.svg?style=flat-square)
 ![](https://img.shields.io/github/v/release/iyear/pure-live-core?color=red&style=flat-square)
 ![](https://img.shields.io/github/last-commit/iyear/pure-live-core?style=flat-square)
+[![Go Report Card](https://goreportcard.com/badge/github.com/iyear/pure-live-core)](https://goreportcard.com/report/github.com/iyear/pure-live-core)
+
+![](https://img.shields.io/github/workflow/status/iyear/pure-live-core/Docker%20Build?label=docker%20build&style=flat-square)
+![](https://img.shields.io/docker/v/iyear/pure-live?label=docker%20tag&style=flat-square)
+![](https://img.shields.io/docker/image-size/iyear/pure-live?style=flat-square&label=docker%20image%20size)
 
 **该项目仅供学习，请勿用于商业用途。任何使用该项目造成的后果由使用者自行承担。**
 
@@ -15,29 +18,52 @@
 
 ## ✨ 特性
 
-🔎   直播间信息、直播流、弹幕流、发送弹幕
-
-⌛    平台 `Websocket` 协议封装，支持转发弹幕消息、直播间热度消息
-
-🗝️   解决跨域问题，支持直播流本地转发
-
-📂   简易的收藏夹功能支持
-
-🎯   资源占用低，5开百万热度直播间、蓝光直播流转发、弹幕全开占用 `40M` 内存
-
-🧬   跨平台支持，甚至可以运行在路由器上
-
-🔨   支持设置 `Socks5` 代理 (未测试)
-
-🧱   良好的项目结构设计，解耦直播平台和核心功能
-
-⚙️ 同时它也是一个简单的命令行工具。
+- 🔎   直播间信息、直播流、弹幕流、发送弹幕
+- ⌛    平台 `Websocket` 协议封装，支持转发弹幕消息、直播间热度消息
+- 🗝️   解决跨域问题，支持直播流本地转发
+- 📂   简易的收藏夹功能支持
+- 🎯   资源占用低，5开百万热度直播间、蓝光直播流转发、弹幕全开占用 `40M` 内存
+- 🧬   跨平台支持，甚至可以运行在路由器上
+- 🔨   支持设置 `Socks5` 代理 (未测试)
+- 🧱   良好的项目结构设计，解耦直播平台和核心功能
+- ⚙️ 同时它也是一个简单的命令行工具。
 
 ......
 
 ## 🛠️ 部署
 
-### 后端
+### Docker
+
+支持 `amd64` `386` `arm64` `arm/v6` `arm/v7` 架构
+
+```shell
+#启动
+docker run --name pure-live -p <HOST_PORT>:8800 -d --restart=always iyear/pure-live:latest
+#或添加-v参数
+docker run --name pure-live -p <HOST_PORT>:8800 -v /HOST/PATH/DATA:/data -v /HOST/PATH/LOG:/log -d --restart=always iyear/pure-live:latest
+
+#查看log
+docker logs -f pure-live
+
+#设置账户配置文件
+docker cp PATH/TO/account.yaml pure-live:/config/account.yaml
+docker restart pure-live
+
+#设置服务器配置文件
+docker cp PATH/TO/server.yaml pure-live:/config/server.yaml
+docker restart pure-live
+
+#备份数据库
+docker cp pure-live:/data/data.db .
+
+#备份配置文件
+docker cp pure-live:/config .
+
+#复制log到宿主机
+docker cp pure-live:/log .
+```
+
+### 二进制部署
 
 下载 [Release](https://github.com/iyear/pure-live-core/releases) 的最新打包文件
 
@@ -66,10 +92,11 @@ chmod +x ./pure-live
 
 - ......
 
-## ⚙️ 命令行
+## ⚙️ 命令行(仅支持二进制文件)
+
 查看版本:
 ```shell
-./pure-lie -v
+./pure-live -v
 ```
 
 ```
@@ -142,6 +169,12 @@ Stream: https://d1--cn-gotcha03.bilivideo.com/live-bvc/842331/live_50329118_9516
 ./pure-live export -d mydata/data.db -p mydata.xlsx
 ```
 
+## 🌲 生态
+
+目前 `pure-live` 的生态并不完善，最终的目标是做到开源社区驱动的维护模式。
+
+在发展到一定规模后， `pure-live` 将会以 `organization` 的形式维护 `core` 与不同平台的客户端。
+
 ## 📝 文档
 
 如何写一个自己的前端? [API文档](./docs/API.md)
@@ -174,7 +207,9 @@ Stream: https://d1--cn-gotcha03.bilivideo.com/live-bvc/842331/live_50329118_9516
 - [x] 哔哩哔哩
 - [x] 虎牙
 - [x] 斗鱼
-- [ ] 企鹅电竞
+- [x] 企鹅电竞
+- [x] 映客
+- [ ] 网易CC
 - [ ] Twitch (等待第三方库支持 `m3u8` 拉流)
 - [ ] 咪咕体育
 
@@ -189,6 +224,16 @@ Stream: https://d1--cn-gotcha03.bilivideo.com/live-bvc/842331/live_50329118_9516
 - [ ] 弹幕JSON保存
 - [ ] 弹幕ASS保存
 
+## 📈 趋势
+
+![stars](https://starchart.cc/iyear/pure-live-core.svg)
+
+## 🧑 贡献者
+
+<a href="https://github.com/iyear/pure-live-core/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=iyear/pure-live-core"  alt="contrib"/>
+</a>
+
 ## 🗒️ 参考
 
 https://github.com/wbt5/real-url
@@ -199,4 +244,4 @@ https://github.com/BacooTang/huya-danmu
 
 ## 🔖 LICENSE
 
-GPL-3.0 License
+AGPL-3.0 License

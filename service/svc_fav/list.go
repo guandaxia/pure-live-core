@@ -1,9 +1,9 @@
-package srv_fav
+package svc_fav
 
 import (
 	"fmt"
-	"github.com/iyear/pure-live/global"
-	"github.com/iyear/pure-live/model"
+	"github.com/iyear/pure-live-core/global"
+	"github.com/iyear/pure-live-core/model"
 )
 
 func AddFavList(title string, order int) (*model.FavoritesList, error) {

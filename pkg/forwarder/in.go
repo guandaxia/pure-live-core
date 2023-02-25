@@ -7,37 +7,64 @@ import (
 	"github.com/q191201771/lal/pkg/rtmp"
 )
 
+// In live stream pull interface
 type In interface {
 	Pull(pullURL string, fn func(tag httpflv.Tag)) error
+	Shutdown() error
 }
 
+// GetIn get pull session
 func GetIn(tp string) In {
 	switch tp {
 	case "flv":
-		return Flv{}
+		return &Flv{}
 	case "rtmp":
-		return Rtmp{}
+		return &Rtmp{}
 	default:
 		return nil
 	}
 }
 
-type Flv struct{}
+// Flv flv pull session
+type Flv struct {
+	session *httpflv.PullSession
+}
 
-func (s Flv) Pull(pullURL string, fn func(tag httpflv.Tag)) error {
-	if err := httpflv.NewPullSession().Pull(pullURL, fn); err != nil {
+// Pull pull flv stream
+func (s *Flv) Pull(pullURL string, fn func(tag httpflv.Tag)) error {
+	session := httpflv.NewPullSession()
+	s.session = session
+
+	if err := session.Pull(pullURL, fn); err != nil {
 		return err
 	}
 	return nil
 }
 
-type Rtmp struct{}
+// Shutdown shutdown flv session
+func (s *Flv) Shutdown() error {
+	return s.session.Dispose()
+}
 
-func (s Rtmp) Pull(pullURL string, fn func(tag httpflv.Tag)) error {
-	if err := rtmp.NewPullSession().Pull(pullURL, func(msg base.RtmpMsg) {
+// Rtmp rtmp pull session
+type Rtmp struct {
+	session *rtmp.PullSession
+}
+
+// Pull pull rtmp stream
+func (s *Rtmp) Pull(pullURL string, fn func(tag httpflv.Tag)) error {
+	session := rtmp.NewPullSession()
+	s.session = session
+
+	if err := session.Pull(pullURL, func(msg base.RtmpMsg) {
 		fn(*remux.RtmpMsg2FlvTag(msg))
 	}); err != nil {
 		return err
 	}
 	return nil
+}
+
+// Shutdown shutdown rtmp session
+func (s *Rtmp) Shutdown() error {
+	return s.session.Dispose()
 }

@@ -2,26 +2,33 @@ package douyu
 
 import (
 	"crypto/md5"
+	"errors"
 	"fmt"
 	"github.com/dop251/goja"
 	"github.com/gorilla/websocket"
 	"github.com/guonaihong/gout"
-	"github.com/iyear/pure-live/model"
-	"github.com/iyear/pure-live/pkg/conf"
-	"github.com/iyear/pure-live/pkg/request"
-	"github.com/iyear/pure-live/pkg/util"
+	"github.com/iyear/pure-live-core/model"
+	"github.com/iyear/pure-live-core/pkg/client/internal/abstract"
+	"github.com/iyear/pure-live-core/pkg/conf"
+	"github.com/iyear/pure-live-core/pkg/request"
+	"github.com/iyear/pure-live-core/pkg/util"
 	"github.com/tidwall/gjson"
+	"go.uber.org/zap"
 	"regexp"
 	"strconv"
 	"strings"
 	"time"
 )
 
-type Douyu struct{}
+type Douyu struct {
+	*abstract.Client
+}
 
 func NewDouyu() (model.Client, error) {
 	return &Douyu{}, nil
 }
+
+// Plat
 func (d *Douyu) Plat() string {
 	return conf.PlatDouyu
 }
@@ -138,32 +145,44 @@ func (d *Douyu) GetPlayURL(room string, qn int) (*model.PlayURL, error) {
 	return &model.PlayURL{
 		Qn:     qn,
 		Desc:   util.Qn2Desc(qn),
-		Origin: fmt.Sprintf("http://dyscdnali1.douyucdn.cn/live/%s?uuid=", strings.Split(resp.Data.RtmpLive, "?")[0]),
+		Origin: fmt.Sprintf("http://hw-tct.douyucdn.cn/live/%s?uuid=", strings.Split(resp.Data.RtmpLive, "?")[0]),
 		CORS:   true,
 		Type:   conf.StreamFlv,
 	}, nil
 }
 
+// GetRoomInfo 通过房间号获取房间信息
 func (d *Douyu) GetRoomInfo(room string) (*model.RoomInfo, error) {
-	html := ""
-	if err := request.HTTP().GET(fmt.Sprintf("https://m.douyu.com/%s", room)).BindBody(&html).Do(); err != nil {
+	var info struct {
+		Error int `json:"error"`
+		Data  struct {
+			RoomId     string `json:"room_id"`
+			OwnerName  string `json:"owner_name"`
+			RoomStatus string `json:"room_status"`
+			RoomName   string `json:"room_name"`
+		} `json:"data"`
+	}
+	if err := request.HTTP().GET(fmt.Sprintf("https://open.douyucdn.cn/api/RoomApi/room/%s", room)).BindJSON(&info).Do(); err != nil {
+		zap.S().Warnf("Douyu: GetRoomInfo: http.Get room:%v, err:%v", room, err)
 		return nil, err
 	}
-	status := util.GetBetweenString(html, `"isLive":`, `,"showTime"`)
-	rid := util.GetBetweenString(html, `"rid":`, `,"vipId"`)
-	upper := util.GetBetweenString(html, `"nickname":"`, `","ownerId"`)
-	link := fmt.Sprintf("https://www.douyu.com/%s", rid)
-	title := util.GetBetweenString(html, `"roomName":"`, `","nickname"`)
+	if info.Error != 0 {
+		zap.S().Warnf("Douyu: GetRoomInfo: rsp err code not 0, room:%v", room)
+		return nil, errors.New("request err")
+	}
+	link := fmt.Sprintf("https://www.douyu.com/%s", info.Data.RoomId)
 	return &model.RoomInfo{
-		Status: util.IF(status == "1", 1, 0).(int),
-		Room:   rid,
-		Upper:  upper,
+		Status: util.IF(info.Data.RoomStatus == "1", 1, 0).(int),
+		Room:   info.Data.RoomId,
+		Upper:  info.Data.OwnerName,
 		Link:   link,
-		Title:  title,
+		Title:  info.Data.RoomName,
 	}, nil
 }
 
-func (d *Douyu) Host() string {
+// Host
+func (d *Douyu) Host(room string) string {
+	_ = room
 	return "wss://danmuproxy.douyu.com:8503/"
 }
 

@@ -2,14 +2,18 @@ package bilibili
 
 import (
 	"github.com/iyear/biligo"
-	"github.com/iyear/pure-live/model"
-	"github.com/iyear/pure-live/pkg/conf"
-	"github.com/iyear/pure-live/pkg/util"
+	"github.com/iyear/pure-live-core/model"
+	"github.com/iyear/pure-live-core/pkg/client/internal/abstract"
+	"github.com/iyear/pure-live-core/pkg/conf"
+	"github.com/iyear/pure-live-core/pkg/util"
 	"strconv"
 )
 
-type base struct{}
+type base struct {
+	*abstract.Client
+}
 
+// NewBiliBili .
 func NewBiliBili() (model.Client, error) {
 	if !conf.Account.BiliBili.Enable {
 		return &BiliComm{
@@ -33,10 +37,12 @@ func NewBiliBili() (model.Client, error) {
 	return &BiliBili{client: b}, nil
 }
 
+// Plat .
 func (c *base) Plat() string {
 	return conf.PlatBiliBili
 }
 
+// GetPlayURL .
 func (c *base) GetPlayURL(room string, qn int) (*model.PlayURL, error) {
 	client := biligo.NewCommClient(&biligo.CommSetting{})
 	roomNum, err := strconv.ParseInt(room, 10, 64)
@@ -46,10 +52,10 @@ func (c *base) GetPlayURL(room string, qn int) (*model.PlayURL, error) {
 
 	// 内部维护一个qn映射表
 	q := map[int]int{
-		conf.QnBest: 10000,
-		conf.QnHigh: 400,
-		conf.QnMid:  250,
-		conf.QnLow:  80,
+		conf.QnBest: 20000,
+		conf.QnHigh: 10000,
+		conf.QnMid:  400,
+		conf.QnLow:  250,
 	}
 
 	r, err := client.LiveGetPlayURL(roomNum, q[qn])
@@ -65,6 +71,7 @@ func (c *base) GetPlayURL(room string, qn int) (*model.PlayURL, error) {
 	}, nil
 }
 
+// GetRoomInfo .
 func (c *base) GetRoomInfo(room string) (*model.RoomInfo, error) {
 	t := biligo.NewCommClient(&biligo.CommSetting{})
 	roomNum, err := strconv.ParseInt(room, 10, 64)
@@ -88,6 +95,7 @@ func (c *base) GetRoomInfo(room string) (*model.RoomInfo, error) {
 	}, nil
 }
 
+// Stop .
 func (c *base) Stop() {
 
 }

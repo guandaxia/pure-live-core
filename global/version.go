@@ -6,9 +6,11 @@ import (
 )
 
 const (
-	Version = "v0.1.0.211224-beta"
+	// Version pure-live version desc
+	Version = "v0.1.4"
 )
 
+// GetRuntime get runtime info
 func GetRuntime() string {
 	return fmt.Sprintf("%s %s/%s", runtime.Version(), runtime.GOOS, runtime.GOARCH)
 }
